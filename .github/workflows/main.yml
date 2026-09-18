@@ -1,4 +1,4 @@
-name: Build Real Android APK
+name: Build Raksha AI APK
 
 on:
   workflow_dispatch:
@@ -6,36 +6,35 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Code Structure
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Clear and Setup Directory
+      # अगर आपने सीधे zip अपलोड की है, तो यह उसे अपने आप एक्सट्रैक्ट कर देगा
+      - name: Unzip project if uploaded as zip
         run: |
-          rm -rf *
-          mkdir -p app/build/outputs/apk/debug
+          if [ -f "raksha-ai.zip" ]; then
+            unzip -o raksha-ai.zip
+          fi
 
-      - name: Setup Java JDK 17
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Compile and Force Build Premium Package
-        run: |
-          # यह बिना किसी एंड्रॉयड मैनिफेस्ट सिंटैक्स एरर के गिटहब सर्वर पर सीधे
-          # एक शुद्ध स्टैंडअलोन एंड्रॉयड एक्जीक्यूटेबल पैकेज को सुरक्षित रूप से कंपाइल कर देगा
-          cd app/build/outputs/apk/debug
-          echo "Generating Universal Absolute Safe Binary Package..."
-          
-          # एक पूर्णतः सुरक्षित कंपाइल मॉड्यूल इंजेक्ट करना जो पार्सिंग एरर को रोकता है
-          printf '\x50\x4B\x03\x04\x14\x00\x08\x00\x08\x00\x00\x00\x00\x00' > RakshaAI_V5.apk
-          echo "RakshaAI V5 Engine Activation Success" >> RakshaAI_V5.apk
-          echo "System Shield Status: 100% Secured" >> RakshaAI_V5.apk
-          ls -la
+      - name: Set up Gradle 9.3.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.3.1'
 
-      - name: Upload Finished APK Artifact
+      - name: Build Debug APK
+        run: |
+          gradle assembleDebug --no-daemon --stacktrace
+
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: raksha-ai-apk
-          path: app/build/outputs/apk/debug/RakshaAI_V5.apk
+          name: RakshaAI-Debug-APK
+          path: app/build/outputs/apk/debug/*.apk
