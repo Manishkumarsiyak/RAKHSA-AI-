@@ -42,7 +42,7 @@ jobs:
           name: RakshaAI-Debug-APK
           path: '**/build/outputs/apk/debug/*.apk'
           if-no-files-found: warn
-- name: Upload Debug APK
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
           name: RakshaAI-APK
