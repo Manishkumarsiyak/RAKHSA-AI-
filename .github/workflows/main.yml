@@ -32,7 +32,7 @@ jobs:
         run: |
           echo "=== 🤖 गिटहब इंटेलिजेंट ऑटो-फिक्सर चालू हो रहा है ==="
           
-          # 1. गिटहब के सर्वर पर मौजूद सबसे बेस्ट ग्रेडल वर्जन का पता लगाना
+          # 1. सर्वर के ग्रेडल वर्जन का पता लगाना
           SERVER_GRADLE_VERSION=$(gradle -v | grep "Gradle" | awk '{print $2}')
           echo "सर्वर पर उपलब्ध सबसे सटीक ग्रेडल वर्जन: $SERVER_GRADLE_VERSION"
           
@@ -40,11 +40,10 @@ jobs:
           gradle wrapper --gradle-version $SERVER_GRADLE_VERSION
           chmod +x gradlew
 
-          # 3. बेस्ट सूटेबल एंड्रॉइड प्लगइन वर्जन का ऑटो-कैलकुलेशन
-          # यह सर्वर के ग्रेडल वर्जन के अनुसार सबसे सही कॉम्बिनेशन खुद बना देगा
+          # 3. एंड्रॉइड प्लगइन वर्जन का ऑटो-कैलकुलेशन
           echo -e "buildscript {\n    repositories {\n        google()\n        mavenCentral()\n    }\n    dependencies {\n        classpath 'com.android.tools.build:gradle:8.3.0'\n    }\n}\nallprojects {\n    repositories {\n        google()\n        mavenCentral()\n    }\n}" > build.gradle
 
-          echo -e "plugins {\n    id 'com.android.application'\n}\nandroid {\n    namespace 'com.rakshaai.v5'\n    compileSdk 34\n    defaultConfig {\n        applicationId \"com.rakshaai.v5\"\n        minSdk 26\n        targetSdk 34\n        versionCode 5\n        versionName \"5.0.0\"\n    }\n}\ndependencies {\n    implementation 'androidx.appcompat:appcompat:1.6.1'\n    implementation 'com.google.android.material:material:1.11.0'\n}" > app/app.build.gradle || echo -e "plugins {\n    id 'com.android.application'\n}\nandroid {\n    namespace 'com.rakshaai.v5'\n    compileSdk 34\n    defaultConfig {\n        applicationId \"com.rakshaai.v5\"\n        minSdk 26\n        targetSdk 34\n        versionCode 5\n        versionName \"5.0.0\"\n    }\n}\ndependencies {\n    implementation 'androidx.appcompat:appcompat:1.6.1'\n    implementation 'com.google.android.material:material:1.11.0'\n}" > app/build.gradle
+          echo -e "plugins {\n    id 'com.android.application'\n}\nandroid {\n    namespace 'com.rakshaai.v5'\n    compileSdk 34\n    defaultConfig {\n        applicationId \"com.rakshaai.v5\"\n        minSdk 26\n        targetSdk 34\n        versionCode 5\n        versionName \"5.0.0\"\n    }\n}\ndependencies {\n    implementation 'androidx.appcompat:appcompat:1.6.1'\n    implementation 'com.google.android.material:material:1.11.0'\n}" > app/build.gradle
 
           # 4. यूआई और कोडिंग फाइल्स बनाना
           echo -e '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="bg_dark">#090D16</color>\n    <color name="card_dark">#111827</color>\n    <color name="security_green">#10B981</color>\n    <color name="warning_yellow">#F59E0B</color>\n    <color name="danger_red">#EF4444</color>\n    <color name="text_primary">#FFFFFF</color>\n    <color name="text_secondary">#64748B</color>\n</resources>' > app/src/main/res/values/colors.xml
@@ -52,12 +51,11 @@ jobs:
           echo -e 'package com.rakshaai.v5\nimport android.os.Bundle\nimport android.widget.Button\nimport android.widget.TextView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nclass MainActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n        val scanButton = findViewById<Button>(R.id.scanButton)\n        val statusTextView = findViewById<TextView>(R.id.statusTextView)\n        scanButton.setOnClickListener {\n            statusTextView.text = "🔄 स्कैनिंग पूर्ण: फोन पूरी तरह सुरक्षित है!"\n            Toast.makeText(this, "AI कोर स्कैन सफल रहा!", Toast.LENGTH_LONG).show()\n        }\n    }\n}' > app/src/main/java/com/rakshaai/v5/MainActivity.kt
           echo -e '<?xml version="1.0" encoding="utf-8"?>\n<manifest xmlns:android="http://android.com"\n    package="com.rakshaai.v5">\n    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />\n    <application\n        android:allowBackup="true"\n        android:label="RakshaAI V5"\n        android:supportsRtl="true"\n        android:theme="@style/Theme.AppCompat.NoActionBar">\n        <activity\n            android:name=".MainActivity"\n            android:exported="true">\n            <intent-filter>\n                <action android:name="android.intent.action.MAIN" />\n                <category android:name="android.intent.category.LAUNCHER" />\n            </intent-filter>\n        </activity>\n    </application>\n</manifest>' > app/src/main/AndroidManifest.xml
 
-          # 5. 🚀 किसी भी हाल में फोर्स बिल्ड (Force Build) करना
-          echo "बिल्ड प्रक्रिया शुरू हो रही है..."
-          ./gradlew assembleDebug --no-daemon || gradle assembleDebug --no-daemon
+          # 5. फोर्स बिल्ड (Force Build)
+          ./gradlew assembleDebug --no-daemon
 
       - name: Force Upload APK File
         uses: actions/upload-artifact@v4
         with:
           name: raksha-ai-apk
-          path: "**/build/outputs/apk/debug/*.apk"
+          path: app/build/outputs/apk/debug/*.apk
