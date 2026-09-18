@@ -11,6 +11,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      # यदि प्रोजेक्ट ज़िप रूप में है तो अनज़िप करेगा
       - name: Unzip project if uploaded as zip
         run: |
           if [ -f "raksha-ai.zip" ]; then
@@ -23,6 +24,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      # मिसिंग debug.keystore को ऑटो-जनरेट करेगा
       - name: Create Debug Keystore
         run: |
           keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
@@ -36,14 +38,10 @@ jobs:
         run: |
           gradle assembleDebug --no-daemon --stacktrace
 
+      # पूरे रनर में बनी APK को ढूंढकर अपलोड करेगा
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
           name: RakshaAI-Debug-APK
-          path: '**/build/outputs/apk/debug/*.apk'
-          if-no-files-found: warn
-      - name: Upload Debug APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: RakshaAI-APK
           path: '**/*.apk'
+          if-no-files-found: error
