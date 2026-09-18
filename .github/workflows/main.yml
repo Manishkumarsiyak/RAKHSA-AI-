@@ -11,17 +11,26 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Unzip project
-        run: unzip raksha-ai.zip -d project_folder
+        run: |
+          mkdir -name project_folder
+          unzip raksha-ai.zip -d project_folder || true
+          ls -la project_folder
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build with Gradle
+      - name: Find and Build with Gradle
         run: |
-          cd project_folder/RakshaAI_V3_READY || cd project_folder
+          # ऑटोमैटिक आपके प्रोजेक्ट के अंदर जाकर gradlew फ़ाइल ढूंढेगा
+          GRADLE_DIR=$(find project_folder -name "gradlew" -exec dirname {} \;)
+          if [ -z "$GRADLE_DIR" ]; then
+            echo "Error: gradlew file not found inside zip structure."
+            exit 1
+          fi
+          cd "$GRADLE_DIR"
           chmod +x gradlew
           ./gradlew assembleDebug
 
