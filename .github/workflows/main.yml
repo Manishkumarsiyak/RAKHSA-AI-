@@ -39,12 +39,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Gradle
+      - name: Setup Specific Stable Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7' # नया वर्शन बायपास करने के लिए फिक्स्ड स्टेबल वर्शन
 
       - name: Build Android APK
         run: |
-          # सर्वर के खुद के मजबूत डिफॉल्ट ग्रेडल टूल का सीधे इस्तेमाल
           gradle assembleDebug
 
       - name: Upload Finished APK
