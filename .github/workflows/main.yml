@@ -33,11 +33,14 @@ jobs:
 
           echo -e '<?xml version="1.0" encoding="utf-8"?>\n<manifest xmlns:android="http://android.com"\n    package="com.rakshaai.v5">\n    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />\n    <application\n        android:allowBackup="true"\n        android:label="RakshaAI V5"\n        android:supportsRtl="true"\n        android:theme="@style/Theme.AppCompat.NoActionBar">\n        <activity\n            android:name=".MainActivity"\n            android:exported="true">\n            <intent-filter>\n                <action android:name="android.intent.action.MAIN" />\n                <category android:name="android.intent.category.LAUNCHER" />\n            </intent-filter>\n        </activity>\n    </application>\n</manifest>' > app/src/main/AndroidManifest.xml
 
-      - name: Setup Java (Upgraded to v5)
-        uses: actions/setup-java@v5
+      - name: Setup Java Environment
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Build Android APK
         run: |
@@ -45,7 +48,7 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: Upload APK
+      - name: Upload Finished APK
         uses: actions/upload-artifact@v4
         with:
           name: raksha-ai-apk
