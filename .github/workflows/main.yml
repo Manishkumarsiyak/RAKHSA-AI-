@@ -29,7 +29,7 @@ jobs:
           echo "include ':app'" > settings.gradle
           echo 'rootProject.name = "RakshaAI_V5"' >> settings.gradle
 
-          # 2. gradle.properties (यह चाबी आपके ऐप को बिना किसी एरर के अनलॉक कर देगी)
+          # 2. gradle.properties
           echo "android.useAndroidX=true" > gradle.properties
           echo "android.enableJetifier=true" >> gradle.properties
 
@@ -47,7 +47,8 @@ jobs:
           
           echo -e 'package com.rakshaai.v5\nimport android.os.Bundle\nimport android.widget.Button\nimport android.widget.TextView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nclass MainActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n        val scanButton = findViewById<Button>(R.id.scanButton)\n        val statusTextView = findViewById<TextView>(R.id.statusTextView)\n        scanButton.setOnClickListener {\n            statusTextView.text = "🔄 स्कैनिंग पूर्ण: फोन पूरी तरह सुरक्षित है!"\n            Toast.makeText(this, "AI कोर स्कैन सफल रहा!", Toast.LENGTH_LONG).show()\n        }\n    }\n}' > app/src/main/java/com/rakshaai/v5/MainActivity.kt
           
-          echo -e '<?xml version="1.0" encoding="utf-8"?>\n<manifest xmlns:android="http://android.com"\n    package="com.rakshaai.v5">\n    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />\n    <application\n        android:allowBackup="true"\n        android:label="RakshaAI V5"\n        android:supportsRtl="true"\n        android:theme="@style/Theme.AppCompat.NoActionBar">\n        <activity\n            android:name=".MainActivity"\n            android:exported="true">\n            <intent-filter>\n                <action android:name="android.intent.action.MAIN" />\n                <category android:name="android.intent.category.LAUNCHER" />\n            </intent-filter>\n        </activity>\n    </application>\n</manifest>' > app/src/main/AndroidManifest.xml
+          # यहाँ पर मैनिफेस्ट के सभी 'android:name' कीवर्ड्स को पूरी तरह शुद्ध रूप से फिक्स कर दिया गया है
+          echo -e '<?xml version="1.0" encoding="utf-8"?>\n<manifest xmlns:android="http://android.com">\n    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />\n    <application\n        android:allowBackup="true"\n        android:label="RakshaAI V5"\n        android:supportsRtl="true"\n        android:theme="@style/Theme.AppCompat.NoActionBar">\n        <activity\n            android:name="com.rakshaai.v5.MainActivity"\n            android:exported="true">\n            <intent-filter>\n                <action android:name="android.intent.action.MAIN" />\n                <category android:name="android.intent.category.LAUNCHER" />\n            </intent-filter>\n        </activity>\n    </application>\n</manifest>' > app/src/main/AndroidManifest.xml
 
       - name: Initialize Gradle Wrapper and Execute Compile
         run: |
