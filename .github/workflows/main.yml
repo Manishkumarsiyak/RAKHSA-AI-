@@ -10,31 +10,41 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Unzip project
+      - name: Unzip project safely
         run: |
-          mkdir -name project_folder
-          unzip raksha-ai.zip -d project_folder || true
-          ls -la project_folder
+          mkdir -p project_folder
+          unzip -q raksha-ai.zip -d project_folder || true
+          echo "=== Displaying Extracted Files Structure ==="
+          find project_folder -maxdepth 3
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Find and Build with Gradle
+      - name: Auto Find and Build with Gradle
         run: |
-          # ऑटोमैटिक आपके प्रोजेक्ट के अंदर जाकर gradlew फ़ाइल ढूंढेगा
-          GRADLE_DIR=$(find project_folder -name "gradlew" -exec dirname {} \;)
-          if [ -z "$GRADLE_DIR" ]; then
-            echo "Error: gradlew file not found inside zip structure."
-            exit 1
+          # यह कमांड आपके प्रोजेक्ट के अंदर जहां भी gradlew फ़ाइल होगी उसे ढूंढ निकालेगी
+          GRADLE_ROOT=$(find project_folder -name "gradlew" -exec dirname {} \; | head -n 1)
+          
+          if [ -z "$GRADLE_ROOT" ]; then
+            echo "❌ Error: gradlew file missing inside your zip structure. Creating a temporary fallback..."
+            GRADLE_ROOT=$(find project_folder -name "build.gradle" -exec dirname {} \; | head -n 1)
+            if [ -z "$GRADLE_ROOT" ]; then
+               echo "❌ Deep Error: No Android build files found at all."
+               exit 1
+            fi
+            cd "$GRADLE_ROOT"
+            gradle wrapper --gradle-version 8.2
+          else
+            cd "$GRADLE_ROOT"
           fi
-          cd "$GRADLE_DIR"
+          
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: Upload APK
+      - name: Upload Finished APK
         uses: actions/upload-artifact@v4
         with:
           name: raksha-ai-apk
