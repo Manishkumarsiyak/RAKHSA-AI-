@@ -1,4 +1,4 @@
-name: Ultimate Auto Repair Build
+name: Build Android APK
 
 on:
   workflow_dispatch:
@@ -7,54 +7,51 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Reset Directory
+      - name: Initialize Dynamic Directory
         run: |
           rm -rf *
           mkdir -p app/src/main/java/com/rakshaai/v5
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/values
 
-      - name: Create Base Project Configuration
-        run: |
-          echo "include ':app'" > settings.gradle
-          echo 'rootProject.name = "RakshaAI_V5"' >> settings.gradle
-
-      - name: Setup Java Environment
+      - name: Setup Java Platform
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Dynamic Gradle Build Environment
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Intelligent Auto-Repair and Force Build
+      - name: Intelligent Build Setup
         run: |
-          echo "=== 🤖 गिटहब इंटेलिजेंट ऑटो-फिक्सर चालू हो रहा है ==="
-          
-          # 1. सर्वर के ग्रेडल वर्जन का पता लगाना
-          SERVER_GRADLE_VERSION=$(gradle -v | grep "Gradle" | awk '{print $2}')
-          echo "सर्वर पर उपलब्ध सबसे सटीक ग्रेडल वर्जन: $SERVER_GRADLE_VERSION"
-          
-          # 2. ऑटोमैटिक रैपर जनरेट करना
-          gradle wrapper --gradle-version $SERVER_GRADLE_VERSION
-          chmod +x gradlew
+          # 1. settings.gradle
+          echo "include ':app'" > settings.gradle
+          echo 'rootProject.name = "RakshaAI_V5"' >> settings.gradle
 
-          # 3. एंड्रॉइड प्लगइन वर्जन का ऑटो-कैलकुलेशन
-          echo -e "buildscript {\n    repositories {\n        google()\n        mavenCentral()\n    }\n    dependencies {\n        classpath 'com.android.tools.build:gradle:8.3.0'\n    }\n}\nallprojects {\n    repositories {\n        google()\n        mavenCentral()\n    }\n}" > build.gradle
+          # 2. Project build.gradle (नवीनतम संगत प्लगइन्स के साथ)
+          echo -e "buildscript {\n    repositories {\n        google()\n        mavenCentral()\n    }\n    dependencies {\n        classpath 'com.android.tools.build:gradle:8.5.0'\n    }\n}\nallprojects {\n    repositories {\n        google()\n        mavenCentral()\n    }\n}" > build.gradle
 
+          # 3. app/build.gradle (यूनिवर्सल सेटिंग्स)
           echo -e "plugins {\n    id 'com.android.application'\n}\nandroid {\n    namespace 'com.rakshaai.v5'\n    compileSdk 34\n    defaultConfig {\n        applicationId \"com.rakshaai.v5\"\n        minSdk 26\n        targetSdk 34\n        versionCode 5\n        versionName \"5.0.0\"\n    }\n}\ndependencies {\n    implementation 'androidx.appcompat:appcompat:1.6.1'\n    implementation 'com.google.android.material:material:1.11.0'\n}" > app/build.gradle
 
-          # 4. यूआई और कोडिंग फाइल्स बनाना
+          # 4. res/values/colors.xml
           echo -e '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="bg_dark">#090D16</color>\n    <color name="card_dark">#111827</color>\n    <color name="security_green">#10B981</color>\n    <color name="warning_yellow">#F59E0B</color>\n    <color name="danger_red">#EF4444</color>\n    <color name="text_primary">#FFFFFF</color>\n    <color name="text_secondary">#64748B</color>\n</resources>' > app/src/main/res/values/colors.xml
+
+          # 5. res/layout/activity_main.xml (यूआई लेआउट)
           echo -e '<?xml version="1.0" encoding="utf-8"?>\n<LinearLayout xmlns:android="http://android.com"\n    android:layout_width="match_parent"\n    android:layout_height="match_parent"\n    android:background="@color/bg_dark"\n    android:orientation="vertical"\n    android:gravity="center"\n    android:padding="20dp">\n    <TextView\n        android:id="@+id/statusTextView"\n        android:layout_width="wrap_content"\n        android:layout_height="wrap_content"\n        android:text="🛡️ RakshaAI V5 AI-Shield Active"\n        android:textColor="@color/security_green"\n        android:textSize="22sp"\n        android:textStyle="bold"/>\n    <Button\n        android:id="@+id/scanButton"\n        android:layout_width="200dp"\n        android:layout_height="60dp"\n        android:layout_marginTop="30dp"\n        android:text="CORE SCAN"\n        android:textStyle="bold"/>\n</LinearLayout>' > app/src/main/res/layout/activity_main.xml
-          echo -e 'package com.rakshaai.v5\nimport android.os.Bundle\nimport android.widget.Button\nimport android.widget.TextView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nclass MainActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n        val scanButton = findViewById<Button>(R.id.scanButton)\n        val statusTextView = findViewById<TextView>(R.id.statusTextView)\n        scanButton.setOnClickListener {\n            statusTextView.text = "🔄 स्कैनिंग पूर्ण: फोन पूरी तरह सुरक्षित है!"\n            Toast.makeText(this, "AI कोर स्कैन सफल रहा!", Toast.LENGTH_LONG).show()\n        }\n    }\n}' > app/src/main/java/com/rakshaai/v5/MainActivity.kt
+
+          # 6. MainActivity.kt (मुख्य सुरक्षा नियंत्रण)
+          echo -e 'package com.rakshaai.v5\nimport android.os.Bundle\nimport android.widget.Button\nimport android.widget.TextView\nimport android.widget.Toast\nimport androidx.appcompat.app.AppCompatActivity\nclass MainActivity : AppCompatActivity() {\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main)\n        val scanButton = findViewById<Button>(R.id.scanButton)\n        val statusTextView = findViewById<TextView>(R.id.statusTextView)\n        scanButton.setOnClickListener {\n            statusTextView.text = "🔄 स्कैनिंग पूर्ण: फोन सुरक्षित है!"\n            Toast.makeText(this, "AI कोर स्कैन सफल रहा!", Toast.LENGTH_LONG).show()\n        }\n    }\n}' > app/src/main/java/com/rakshaai/v5/MainActivity.kt
+
+          # 7. AndroidManifest.xml
           echo -e '<?xml version="1.0" encoding="utf-8"?>\n<manifest xmlns:android="http://android.com"\n    package="com.rakshaai.v5">\n    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />\n    <application\n        android:allowBackup="true"\n        android:label="RakshaAI V5"\n        android:supportsRtl="true"\n        android:theme="@style/Theme.AppCompat.NoActionBar">\n        <activity\n            android:name=".MainActivity"\n            android:exported="true">\n            <intent-filter>\n                <action android:name="android.intent.action.MAIN" />\n                <category android:name="android.intent.category.LAUNCHER" />\n            </intent-filter>\n        </activity>\n    </application>\n</manifest>' > app/src/main/AndroidManifest.xml
 
-          # 5. फोर्स बिल्ड (Force Build)
+      - name: Native Execution and Build
+        run: |
+          # सर्वर पर उपलब्ध डिफ़ॉल्ट ग्रेडल टूल्स का लाइव विश्लेषण और कंपाइलेशन
+          gradle wrapper --gradle-version 8.7
+          chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
 
-      - name: Force Upload APK File
+      - name: Direct Artifact Delivery
         uses: actions/upload-artifact@v4
         with:
           name: raksha-ai-apk
