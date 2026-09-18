@@ -10,12 +10,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Unzip project safely
+      - name: Force Unzip and Structure Fix
         run: |
           mkdir -p project_folder
           unzip -q raksha-ai.zip -d project_folder || true
-          echo "=== Displaying Extracted Files Structure ==="
-          find project_folder -maxdepth 3
+          
+          # यदि ज़िप के अंदर कोई अन्य ज़िप छिपी है तो उसे भी खोलें
+          find project_folder -name "*.zip" -exec unzip -q {} -d project_folder \;
+          
+          echo "=== Checking Inside Project Folder ==="
+          find project_folder -maxdepth 4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v5
@@ -23,22 +27,28 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Auto Find and Build with Gradle
+      - name: Auto Initialize Gradle If Missing
         run: |
-          # यह कमांड ज़िप के अंदर किसी भी सब-फोल्डर में छिपी gradlew फ़ाइल को ऑटोमैटिक ढूंढ लेगी
-          GRADLE_ROOT=$(find project_folder -name "gradlew" -exec dirname {} \; | head -n 1)
+          # ऐसी जगह ढूंढें जहां AndroidManifest.xml या src फोल्डर हो
+          MANIFEST_DIR=$(find project_folder -name "AndroidManifest.xml" -exec dirname {} \; | sed 's/\/src\/main//g' | head -n 1)
           
-          if [ -z "$GRADLE_ROOT" ]; then
-            echo "❌ Error: gradlew file missing inside your zip structure. Checking for build.gradle..."
-            GRADLE_ROOT=$(find project_folder -name "build.gradle" -exec dirname {} \; | head -n 1)
-            if [ -z "$GRADLE_ROOT" ]; then
-               echo "❌ Deep Error: No Android build files found at all inside the zip."
-               exit 1
-            fi
-            cd "$GRADLE_ROOT"
+          if [ -z "$MANIFEST_DIR" ]; then
+            echo "❌ Error: No valid Android Source Code structure found anywhere inside the zip file."
+            exit 1
+          fi
+          
+          cd "$MANIFEST_DIR"
+          
+          # यदि build.gradle गायब है तो एक बेसिक कॉन्फ़िगरेशन बनाएं
+          if [ ! -f "build.gradle" ] && [ ! -f "build.gradle.kts" ]; then
+            echo "Generating fallback build.gradle..."
+            echo -e "plugins {\n    id 'com.android.application'\n}\nandroid {\n    compileSdk 34\n    defaultConfig {\n        applicationId \"com.rakshaai.v5\"\n        minSdk 26\n        targetSdk 34\n        versionCode 5\n        versionName \"5.0.0\"\n    }\n}" > build.gradle
+          fi
+          
+          # यदि ग्रेडल रैपर गायब है तो उसे इंस्टॉल करें
+          if [ ! -f "gradlew" ]; then
+            echo "Installing missing Gradle Wrapper..."
             gradle wrapper --gradle-version 8.2
-          else
-            cd "$GRADLE_ROOT"
           fi
           
           chmod +x gradlew
